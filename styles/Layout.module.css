@@ -1,10 +1,22 @@
 .main {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  padding: 6rem;
+  padding: 5rem 0;
   min-height: 100vh;
+}
+
+.contaienr {
+  min-height: 100vh;
+  padding: 5rem 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 1.25rem;
 }
 
 .description {
