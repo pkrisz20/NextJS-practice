@@ -1,12 +1,13 @@
 import Head from 'next/head'
 import ArticleList from '../components/ArticleList'
-// import { Inter } from '@next/font/google'
-// import styles from "../styles/Layout.module.css";
-
-// const inter = Inter({ subsets: ['latin'] })
+import { useSelector, useDispatch } from 'react-redux'
+import { increment, decrement, selectValue } from '../slices/counterSlice'
 
 export default function Home({ articles }) {
-  console.table(articles)
+
+  const count = useSelector(selectValue)
+  const dispatch = useDispatch()
+  // console.table(articles)
   return (
     <>
       <Head>
@@ -18,6 +19,13 @@ export default function Home({ articles }) {
       </Head>
 
       <ArticleList articles={articles} />
+
+      <div style={{ display: 'flex', width: '500px', justifyContent: 'space-between', alignItems: 'center' }}>
+        <button onClick={() => dispatch(decrement())} style={{ padding: '10px', fontSize: '30px', backgroundColor: 'red', color: 'white' }}>-</button>
+        <button onClick={() => dispatch(increment())} style={{ padding: '10px', fontSize: '30px', backgroundColor: 'green', color: 'white' }}>+</button>
+      </div>
+
+      <h1>Counter is {count}</h1>
     </>
   )
 }
