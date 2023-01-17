@@ -1,4 +1,6 @@
 import '../styles/globals.css'
+import '../styles/Product.scss'
+import '../styles/Filters.scss'
 import Layout from "../components/Layout"
 import { store } from "../store"
 import { Provider } from "react-redux"
@@ -10,5 +12,5 @@ export default function App({ Component, pageProps }) {
         <Component {...pageProps} />
       </Layout>
     </Provider>
-  );
+  )
 }
