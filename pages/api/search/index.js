@@ -1,10 +1,12 @@
 import { products } from "../../../data/products"
 
 export default function handler (req, res) {
-    let { filter = null } = req.body
-    let { discount = null } = req.body
-    let { minPrice = null } = req.body
-    let { maxPrice = null } = req.body
+    console.log(req.body.filter)
+    return;
+    let { categories = [] } = req.body.filter
+    let { priceMin = null } = req.body.filter
+    let { priceMax = null } = req.body.filter
+    let { discount = false } = req.body.filter
 
     if (filter != null && filter.length > 0) {
         let result = []
