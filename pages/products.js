@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useRef } from "react"
 import Product from "../components/Product"
 const Axios = require('axios')
 
@@ -17,6 +17,8 @@ const ProductsList = () => {
         discount: false
     })
 
+    const mountedRef = useRef()
+
     async function fetchProducts () {
         const response = await fetch('/api/products')
         const data = await response.json()
@@ -25,17 +27,21 @@ const ProductsList = () => {
 
     useEffect(() => {
         fetchProducts()
+        console.log('rendered')
+        mountedRef.current = true
     }, [])
 
     function setFilterLabels (event) {
         setIsLoading(true)
         if (event.target.checked) setFilters(prev => ({...prev, categories: [...prev.categories, event.target.value] }))
         else if (!event.target.checked) setFilters(prev => ({...prev, categories: prev.categories.filter(item => item != event.target.value)}))
+        mountedRef.current = false
     }
 
     function filterDiscount (event) {
         setIsLoading(true)
         setFilters(prev => ({ ...prev, discount: event.target.checked }))
+        mountedRef.current = false
     }
 
     function changeMinPriceFilter () {
@@ -49,6 +55,7 @@ const ProductsList = () => {
             setMaxPrice(minPrice)
             setMinPrice(tempValue)
         }
+        mountedRef.current = false
     }
 
     function changeMaxPriceFilter () {
@@ -62,6 +69,7 @@ const ProductsList = () => {
             setMaxPrice(minPrice)
             setMinPrice(tempValue)
         }
+        mountedRef.current = false
     }
 
     const minPriceValue = useMemo(() => {
@@ -87,7 +95,7 @@ const ProductsList = () => {
     }, [products])
 
     const isAnyDiscount = useMemo(() => {
-        if (filteredProducts.length > 0) {
+        if (typeof filteredProducts !== "string" && filteredProducts.length > 0) {
             const filteredDiscount = filteredProducts.some(element => element.discount != null)
             return filteredDiscount;
         }
@@ -96,17 +104,20 @@ const ProductsList = () => {
     }, [products, filteredProducts])
 
     useEffect(() => {
-        console.log(filters)
-        return
-        Axios.post('/api/search', {
-            filter: filters
-        })
-        .then(res => {
-            setTimeout(() => {
-                setFilteredProducts(res.data.result)
-                setIsLoading(false)
-            }, 1000);
-        })
+        if (!mountedRef.current){
+            // console.log("trick: changed")
+            console.log(filters)
+            Axios.post('/api/search', {
+                filter: filters,
+                prevResults: filteredProducts
+            })
+            .then(res => {
+                setTimeout(() => {
+                    setFilteredProducts(res.data.result)
+                    setIsLoading(false)
+                }, 1000);
+            })
+        }
     }, [filters])
 
     return (
@@ -168,21 +179,23 @@ const ProductsList = () => {
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', justifyContent: 'center', gap: '15px', width: '100%', marginLeft: '20px' }}>
-                    { filteredProducts?.length == 0 ? (
-                            products.filter(value => {
+                    {   typeof filteredProducts !== "string" ? (
+                            filteredProducts == 0 ? (
+                                products.filter(value => {
+                                    if (searchText === "") return true;
+                                    else if (value.text.toLowerCase().includes(searchText.toLowerCase())) return true;
+                                }).map((product, index) => {
+                                    return (product?.available && <Product key={index} product={product} />)
+                                })
+                            ) : filteredProducts?.filter(value => {
                                 if (searchText === "") return true;
                                 else if (value.text.toLowerCase().includes(searchText.toLowerCase())) return true;
-                            }).map(product => {
-                                return (product?.available && <Product key={product.id} product={product} />)
+                            }).map((product, index) => {
+                                return (
+                                    product?.available && <Product key={index} product={product} />
+                                )
                             })
-                        ) : filteredProducts?.filter(value => {
-                            if (searchText === "") return true;
-                            else if (value.text.toLowerCase().includes(searchText.toLowerCase())) return true;
-                        }).map(item => {
-                            return (
-                                item?.available && <Product key={item.id} product={item} />
-                            )
-                        })
+                        ) : (<p className="not-found">{ filteredProducts }</p>)
                     }
                 </div>
             </div>
