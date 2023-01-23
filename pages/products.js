@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState, useRef } from "react"
 import Product from "../components/Product"
+// import { useRouter } from "next/router"
 const Axios = require('axios')
 
 const ProductsList = () => {
-
+    // const router = useRouter()
     const [searchText, setSearchText] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const [products, setProducts] = useState([])
@@ -27,7 +28,6 @@ const ProductsList = () => {
 
     useEffect(() => {
         fetchProducts()
-        console.log('rendered')
         mountedRef.current = true
     }, [])
 
@@ -104,18 +104,32 @@ const ProductsList = () => {
     }, [products, filteredProducts])
 
     useEffect(() => {
+        // If everything is default then send back nothing
+        if (filters.categories.length == 0 && filters.priceMin == null && filters.priceMax == null && !filters.discount) {
+            setIsLoading(false)
+            setFilteredProducts([])
+            return
+        }
         if (!mountedRef.current){
-            // console.log("trick: changed")
-            console.log(filters)
+            console.log(`Data sent from front`)
+            console.table(filters)
             Axios.post('/api/search', {
                 filter: filters,
-                prevResults: filteredProducts
             })
             .then(res => {
+                console.log(`Status: ${res.status}`)
                 setTimeout(() => {
                     setFilteredProducts(res.data.result)
                     setIsLoading(false)
                 }, 1000);
+            })
+            .catch(e => {
+                console.log(`Error message: ${e.message}`)
+                if (e.request.status >= 500 && e.request.status <= 599) {
+                    setTimeout(() => {
+                        setIsLoading(false)
+                    }, 1000);
+                }
             })
         }
     }, [filters])
@@ -176,6 +190,7 @@ const ProductsList = () => {
                         <label htmlFor="key-search">Search by key:</label>
                         <input type="text" id="key-search" name="key-search" onChange={(e) => setSearchText(e.target.value)} />
                     </div>
+                    <button className="filters-clear" onClick={() => setFilteredProducts([])}>Clear filters</button>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', justifyContent: 'center', gap: '15px', width: '100%', marginLeft: '20px' }}>

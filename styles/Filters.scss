@@ -58,6 +58,23 @@
             border: none;
         }
     }
+
+    &-clear {
+        padding: 10px 20px;
+        font-weight: 700;
+        font-size: 20px;
+        color: #fff;
+        background-color: red;
+        margin: 10px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: all .3s ease-in-out;
+
+        &:hover {
+            background-color: blue;
+        }
+    }
 }
 
 .filter-group {
